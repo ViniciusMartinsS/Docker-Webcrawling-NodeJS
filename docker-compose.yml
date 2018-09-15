@@ -1,0 +1,43 @@
+version: "3"
+services:
+  selenium:
+    container_name: selenium
+    image: selenium/hub:3.8.1-chlorine
+    ports:
+      - 4444:4444
+    networks:
+      - app-network
+
+  chrome:
+    image: selenium/node-chrome-debug
+    #pwd = secret
+    ## voce pode acessar seu chrome, via VNC Viewer
+    ## Apontando para localhost:5900 com a senha pwd
+    ports:
+      - 5900:5900
+    environment:
+      HUB_HOST: selenium
+
+    links:
+      - selenium
+    networks:
+      - app-network
+    volumes:
+      - /dev/shm:/dev/shm
+
+  app:
+    build:
+      context: webcrawlingFacebook
+    links:
+      - chrome
+    depends_on:
+      - chrome
+    environment:
+      SELENIUM_HOST: selenium
+      SELENIUM_PORT: 4444
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
